@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<module>
+    <id>Paypal.DirectPayment</id>
+    <version>2.12.0</version>
+    <platformVersion>2.12.0</platformVersion>
+    <dependencies>
+        <dependency id="VirtoCommerce.Core" version="2.17.0" />
+    </dependencies>
+
+    <title>Paypal Direct Payment</title>
+    <description>Paypal Direct Payment API integration</description>
+    <authors>
+        <author>Virto Commerce</author>
+        <author>Egidijus Mažeika</author>
+    </authors>
+    <owners>
+        <owner>Virto Commerce</owner>
+    </owners>
+    <projectUrl>https://virtocommerce.com/apps/extensions/paypal-direct-payment</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/VirtoCommerce/vc-module-Paypal-DirectPayments/master/Paypal.DirectPayments/Content/paypal_2014_logo.png</iconUrl>
+    <releaseNotes>First version.</releaseNotes>
+    <copyright>Copyright © 2011-2016 Virto Commerce. All rights reserved</copyright>
+    <tags>Paypal bankcard payment gateway</tags>
+
+    <assemblyFile>Paypal.DirectPayments.dll</assemblyFile>
+    <moduleType>Paypal.DirectPayments.Module, Paypal.DirectPayments</moduleType>
+
+    <settings>
+        <group name="Payment methods|Paypal|Direct Payment">
+            <setting>
+                <name>Paypal.DirectPayments.Mode</name>
+                <valueType>string</valueType>
+                <allowedValues>
+                    <value>Sandbox</value>
+                    <value>Live</value>
+                </allowedValues>
+                <defaultValue>Sandbox</defaultValue>
+                <title>Work mode</title>
+                <description>Type of working mode (Sandbox or Live)</description>
+            </setting>
+            <setting>
+                <name>Paypal.DirectPayments.APIUsername</name>
+                <valueType>string</valueType>
+                <title>API Username</title>
+                <description>Merchant API Username credential</description>
+            </setting>
+            <setting>
+                <name>Paypal.DirectPayments.APIPassword</name>
+                <valueType>string</valueType>
+                <title>API password</title>
+                <description>Merchant API password credential</description>
+            </setting>
+            <setting>
+                <name>Paypal.DirectPayments.APISignature</name>
+                <valueType>string</valueType>
+                <title>API signature</title>
+                <description>Merchant API signature credential</description>
+            </setting>
+        </group>
+    </settings>
+</module>
