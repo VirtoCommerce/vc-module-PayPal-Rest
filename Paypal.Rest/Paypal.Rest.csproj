@@ -110,6 +110,9 @@
     <Compile Include="PaymentMethods\PaypalRestCreditCardPaymentMethod.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="PaymentMethods\PaypalRestPayPalPaymentMethod.cs" />
+    <Compile Include="PayPalRestConfiguration.cs" />
+    <Compile Include="PayPalRestProcessResult.cs" />
+    <Compile Include="PayPalService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <PropertyGroup>
