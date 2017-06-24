@@ -107,8 +107,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Managers\PaypalRestPaymentMethod.cs" />
+    <Compile Include="PaymentMethods\PaypalRestCreditCardPaymentMethod.cs" />
     <Compile Include="Module.cs" />
+    <Compile Include="PaymentMethods\PaypalRestPayPalPaymentMethod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <PropertyGroup>

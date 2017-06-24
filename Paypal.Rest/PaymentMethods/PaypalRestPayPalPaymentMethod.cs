@@ -6,18 +6,18 @@ using System.Linq;
 using PayPal.Api;
 using VirtoCommerce.Domain.Payment.Model;
 
-namespace Paypal.Rest.Managers
+namespace Paypal.Rest.PaymentMethods
 {
-    public class PaypalRestPaymentMethod : PaymentMethod
+    public class PaypalRestPayPalPaymentMethod : PaymentMethod
     {
-        public PaypalRestPaymentMethod()
-            : base("Paypal.Rest")
+        public PaypalRestPayPalPaymentMethod()
+            : base("Paypal.Rest.PayPal")
         {
         }
 
-        public override PaymentMethodType PaymentMethodType => PaymentMethodType.Standard;
+        public override PaymentMethodType PaymentMethodType => PaymentMethodType.Redirection;
 
-        public override PaymentMethodGroupType PaymentMethodGroupType => PaymentMethodGroupType.BankCard;
+        public override PaymentMethodGroupType PaymentMethodGroupType => PaymentMethodGroupType.Paypal;
 
         public override ProcessPaymentResult ProcessPayment(ProcessPaymentEvaluationContext context)
         {
@@ -35,7 +35,7 @@ namespace Paypal.Rest.Managers
                 { "clientId", GetSetting("PayPal.Rest.ClientId") },
                 { "clientSecret", GetSetting("PayPal.Rest.ClientSecret") }
             };
-            
+
             var accessToken = new OAuthTokenCredential(config).GetAccessToken();
             var apiContext = new APIContext(accessToken);
 
@@ -73,7 +73,8 @@ namespace Paypal.Rest.Managers
                         postal_code = shippingAddress.PostalCode,
                         state = shippingAddress.RegionId,
                     }
-                }
+                },
+                invoice_number = Guid.NewGuid().ToString()
             };
 
             var payer = new Payer
@@ -114,7 +115,7 @@ namespace Paypal.Rest.Managers
             {
                 intent = "Sale",
                 payer = payer,
-                transactions = new List<Transaction> { transaction}
+                transactions = new List<Transaction> { transaction }
             };
             var createdPayment = payment.Create(apiContext);
 
@@ -137,7 +138,7 @@ namespace Paypal.Rest.Managers
                 context.Payment.CapturedDate = DateTime.UtcNow;
                 newStatus = PaymentStatus.Paid;
             }
-            
+
             retVal.NewPaymentStatus = context.Payment.PaymentStatus = newStatus;
             return retVal;
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Practices.Unity;
-using Paypal.Rest.Managers;
+using Paypal.Rest.PaymentMethods;
 using VirtoCommerce.Domain.Payment.Services;
 using VirtoCommerce.Platform.Core.Modularity;
 using VirtoCommerce.Platform.Core.Settings;
@@ -16,23 +16,28 @@ namespace Paypal.Rest
             _container = container;
         }
 
-        #region IModule Members
-
         public override void PostInitialize()
         {
             var settings = _container.Resolve<ISettingsManager>().GetModuleSettings("Paypal.Rest");
 
-            Func<PaypalRestPaymentMethod> paypalBankCardsExpressCheckoutPaymentMethodFactory = () => new PaypalRestPaymentMethod
+            Func<PaypalRestCreditCardPaymentMethod> paypalRestCreditCardPaymentMethod = () => new PaypalRestCreditCardPaymentMethod
             {
                 Name = "Credit Card (Paypal/REST)",
-                Description = "Paypal (REST)",
-                LogoUrl = "https://raw.githubusercontent.com/VirtoCommerce/vc-module-Paypal-DirectPayments/master/Paypal.DirectPayments/Content/paypal_2014_logo.png",
+                Description = "Process credit cards using PayPal's REST interface.",
+                LogoUrl = "https://github.com/montanehamilton/vc-module-PayPal-Rest/raw/master/Paypal.Rest/Content/paypal_2014_logo.png",
                 Settings = settings
             };
 
-            _container.Resolve<IPaymentMethodsService>().RegisterPaymentMethod(paypalBankCardsExpressCheckoutPaymentMethodFactory);
-        }
+            Func<PaypalRestPayPalPaymentMethod> paypalRestPayPalPaymentMethod = () => new PaypalRestPayPalPaymentMethod()
+            {
+                Name = "PayPal (Paypal/REST)",
+                Description = "Process PayPal using PayPal's REST interface.",
+                LogoUrl = "https://github.com/montanehamilton/vc-module-PayPal-Rest/raw/master/Paypal.Rest/Content/paypal_2014_logo.png",
+                Settings = settings
+            };
 
-        #endregion
+            _container.Resolve<IPaymentMethodsService>().RegisterPaymentMethod(paypalRestCreditCardPaymentMethod);
+            _container.Resolve<IPaymentMethodsService>().RegisterPaymentMethod(paypalRestPayPalPaymentMethod);
+        }
     }
 }
