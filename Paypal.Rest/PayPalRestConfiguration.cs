@@ -10,13 +10,16 @@ namespace Paypal.Rest
 
         public string ClientSecret { get; set; }
 
+        public int Timeout { get; set; } = 30000;
+
         public Dictionary<string, string> ToDictionary()
         {
             return new Dictionary<string, string>
             {
                 { "mode", Mode },
                 { "clientId", ClientId },
-                { "clientSecret", ClientSecret }
+                { "clientSecret", ClientSecret },
+                { "connectionTimeout", Timeout.ToString() }
             };
         }
     }

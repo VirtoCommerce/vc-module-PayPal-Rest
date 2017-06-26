@@ -32,11 +32,11 @@ namespace Paypal.Rest.Test
             {
                 BankCardInfo = new BankCardInfo
                 {
-                    BankCardNumber = "4417119669820331",
-                    BankCardCVV2 = "874",
+                    BankCardNumber = "4012888888881881",
+                    BankCardCVV2 = "000",
                     BankCardMonth = 11,
                     BankCardYear = 2018,
-                    BankCardType = "visa" // Get VC values
+                    BankCardType = "VISA"
                 },
                 Order = new CustomerOrder
                 {
@@ -46,7 +46,7 @@ namespace Paypal.Rest.Test
                         {
                             AddressType = AddressType.Shipping,
                             City = "Lehi",
-                            CountryCode = "US", // Get VC values
+                            CountryCode = "USA",
                             CountryName = "United States",
                             Email = "lehi@vcPaypal.com",
                             FirstName = "Sam",
@@ -82,7 +82,7 @@ namespace Paypal.Rest.Test
                     {
                         AddressType = AddressType.Billing,
                         City = "Lehi",
-                        CountryCode = "US", // Get VC values
+                        CountryCode = "USA",
                         CountryName = "United States",
                         Email = "lehi@vcPaypal.com",
                         FirstName = "Sam",

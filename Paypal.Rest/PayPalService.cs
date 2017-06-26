@@ -14,16 +14,19 @@ namespace Paypal.Rest
         public PayPalService(PayPalRestConfiguration configuration)
         {
             _configuration = configuration;
+            _configuration.Timeout = 60000;
         }
 
         public PayPalRestProcessResult ProcessCreditCard(ProcessPaymentEvaluationContext context)
         {
             var accessToken = new OAuthTokenCredential(_configuration.ToDictionary()).GetAccessToken();
             var apiContext = new APIContext(accessToken);
+            apiContext.Config = _configuration.ToDictionary();
 
             var shippingAddress =
                 context.Order.Addresses.FirstOrDefault(
-                    a => a.AddressType == VirtoCommerce.Domain.Commerce.Model.AddressType.BillingAndShipping || a.AddressType == VirtoCommerce.Domain.Commerce.Model.AddressType.Shipping);
+                    a => a.AddressType == VirtoCommerce.Domain.Commerce.Model.AddressType.BillingAndShipping ||
+                         a.AddressType == VirtoCommerce.Domain.Commerce.Model.AddressType.Shipping);
             if (shippingAddress == null)
             {
                 throw new Exception("No shipping address available.");
@@ -48,12 +51,13 @@ namespace Paypal.Rest
                     shipping_address = new ShippingAddress
                     {
                         city = shippingAddress.City,
-                        country_code = shippingAddress.CountryCode,
+                        country_code = GetPayPalCountryCode(shippingAddress.CountryCode),
                         line1 = shippingAddress.Line1,
                         line2 = shippingAddress.Line2,
                         phone = shippingAddress.Phone,
                         postal_code = shippingAddress.PostalCode,
-                        state = shippingAddress.RegionId, recipient_name = shippingAddress.Name
+                        state = shippingAddress.RegionId,
+                        recipient_name = shippingAddress.Name
                     }
                 },
                 invoice_number = Guid.NewGuid().ToString()
@@ -71,7 +75,7 @@ namespace Paypal.Rest
                             billing_address = new Address
                             {
                                 city = context.Payment.BillingAddress.City,
-                                country_code = context.Payment.BillingAddress.CountryCode,
+                                country_code = GetPayPalCountryCode(context.Payment.BillingAddress.CountryCode),
                                 line1 = context.Payment.BillingAddress.Line1,
                                 line2 = context.Payment.BillingAddress.Line2,
                                 phone = context.Payment.BillingAddress.Phone,
@@ -84,7 +88,7 @@ namespace Paypal.Rest
                             first_name = context.Payment.BillingAddress.FirstName,
                             last_name = context.Payment.BillingAddress.LastName,
                             number = context.BankCardInfo.BankCardNumber,
-                            type = context.BankCardInfo.BankCardType
+                            type = GetPayPalCreditCardType(context.BankCardInfo.BankCardType)
                         }
                     }
                 },
@@ -97,24 +101,65 @@ namespace Paypal.Rest
             {
                 intent = "Sale",
                 payer = payer,
-                transactions = new List<Transaction> { transaction }
+                transactions = new List<Transaction> {transaction}
             };
-            var createdPayment = payment.Create(apiContext);
-            if (createdPayment.state == "failed")
+
+            try
+            {
+                var createdPayment = payment.Create(apiContext);
+
+                if (createdPayment.state == "failed")
+                {
+                    return new PayPalRestProcessResult
+                    {
+                        Succeeded = false,
+                        Error = createdPayment.failure_reason
+                    };
+                }
+
+                return new PayPalRestProcessResult
+                {
+                    Succeeded = true,
+                    Error = string.Empty,
+                    PaymentId = createdPayment.id
+                };
+            }
+            catch (Exception e)
             {
                 return new PayPalRestProcessResult
                 {
                     Succeeded = false,
-                    Error = createdPayment.failure_reason
+                    Error = e.Message,
+                    PaymentId = string.Empty
                 };
             }
+        }
 
-            return new PayPalRestProcessResult
+        public string GetPayPalCreditCardType(string virtoCommerceType)
+        {
+            switch (virtoCommerceType.ToUpperInvariant())
             {
-                Succeeded = true,
-                Error = string.Empty,
-                PaymentId = createdPayment.id
-            };
+                case "VISA":
+                    return "visa";
+                case "DISCOVER":
+                    return "discover";
+                case "MASTERCARD":
+                    return "mastercard";
+                case "AMEX":
+                    return "amex";
+            }
+
+            throw new ArgumentException("$'{virtoCommerceType}' is not a valid credit card type.");
+        }
+
+        private string GetPayPalCountryCode(string virtoCommerceCountryCode)
+        {
+            if (virtoCommerceCountryCode.ToUpperInvariant() == "USA")
+            {
+                return "US";
+            }
+
+            return string.Empty;
         }
     }
 }
