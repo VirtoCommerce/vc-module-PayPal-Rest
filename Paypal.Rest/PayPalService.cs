@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using PayPal.Api;
 using VirtoCommerce.Domain.Payment.Model;
@@ -19,18 +18,23 @@ namespace Paypal.Rest
 
         public PayPalRestProcessResult ProcessCreditCard(ProcessPaymentEvaluationContext context)
         {
-            var accessToken = new OAuthTokenCredential(_configuration.ToDictionary()).GetAccessToken();
-            var apiContext = new APIContext(accessToken);
-            apiContext.Config = _configuration.ToDictionary();
-
             var shippingAddress =
                 context.Order.Addresses.FirstOrDefault(
                     a => a.AddressType == VirtoCommerce.Domain.Commerce.Model.AddressType.BillingAndShipping ||
                          a.AddressType == VirtoCommerce.Domain.Commerce.Model.AddressType.Shipping);
+
+
+
             if (shippingAddress == null)
             {
                 throw new Exception("No shipping address available.");
             }
+
+            var billingAddress = context.Order.Addresses.FirstOrDefault(
+                                     a => a.AddressType == VirtoCommerce.Domain.Commerce.Model.AddressType
+                                              .BillingAndShipping ||
+                                          a.AddressType == VirtoCommerce.Domain.Commerce.Model.AddressType.Billing) ??
+                                 shippingAddress;
 
             var transaction = new Transaction
             {
@@ -57,7 +61,7 @@ namespace Paypal.Rest
                         phone = shippingAddress.Phone,
                         postal_code = shippingAddress.PostalCode,
                         state = shippingAddress.RegionId,
-                        recipient_name = shippingAddress.Name
+                        recipient_name = FormattedName(shippingAddress)
                     }
                 },
                 invoice_number = Guid.NewGuid().ToString()
@@ -74,19 +78,19 @@ namespace Paypal.Rest
                         {
                             billing_address = new Address
                             {
-                                city = context.Payment.BillingAddress.City,
-                                country_code = GetPayPalCountryCode(context.Payment.BillingAddress.CountryCode),
-                                line1 = context.Payment.BillingAddress.Line1,
-                                line2 = context.Payment.BillingAddress.Line2,
-                                phone = context.Payment.BillingAddress.Phone,
-                                postal_code = context.Payment.BillingAddress.PostalCode,
-                                state = context.Payment.BillingAddress.RegionId,
+                                city = billingAddress.City,
+                                country_code = GetPayPalCountryCode(billingAddress.CountryCode),
+                                line1 = billingAddress.Line1,
+                                line2 = billingAddress.Line2,
+                                phone = billingAddress.Phone,
+                                postal_code = billingAddress.PostalCode,
+                                state = billingAddress.RegionId,
                             },
                             cvv2 = context.BankCardInfo.BankCardCVV2,
                             expire_month = context.BankCardInfo.BankCardMonth,
                             expire_year = context.BankCardInfo.BankCardYear,
-                            first_name = context.Payment.BillingAddress.FirstName,
-                            last_name = context.Payment.BillingAddress.LastName,
+                            first_name = billingAddress.FirstName,
+                            last_name = billingAddress.LastName,
                             number = context.BankCardInfo.BankCardNumber,
                             type = GetPayPalCreditCardType(context.BankCardInfo.BankCardType)
                         }
@@ -94,9 +98,10 @@ namespace Paypal.Rest
                 },
                 payer_info = new PayerInfo
                 {
-                    email = context.Payment.BillingAddress.Email
+                    email = billingAddress.Email
                 }
             };
+
             var payment = new Payment
             {
                 intent = "Sale",
@@ -106,6 +111,8 @@ namespace Paypal.Rest
 
             try
             {
+                var accessToken = new OAuthTokenCredential(_configuration.ToDictionary()).GetAccessToken();
+                var apiContext = new APIContext(accessToken) {Config = _configuration.ToDictionary()};
                 var createdPayment = payment.Create(apiContext);
 
                 if (createdPayment.state == "failed")
@@ -160,6 +167,12 @@ namespace Paypal.Rest
             }
 
             return string.Empty;
+        }
+
+        private string FormattedName(VirtoCommerce.Domain.Commerce.Model.Address address)
+        {
+            var name = $"{address.FirstName} {address.MiddleName} {address.LastName}";
+            return name.Replace("  ", " ");
         }
     }
 }

@@ -19,10 +19,10 @@ namespace Paypal.Rest
         public override void PostInitialize()
         {
             var settings = _container.Resolve<ISettingsManager>().GetModuleSettings("Paypal.Rest");
-
+            
             Func<PaypalRestCreditCardPaymentMethod> paypalRestCreditCardPaymentMethod = () => new PaypalRestCreditCardPaymentMethod
             {
-                Name = "Credit Card (Paypal/REST)",
+                Name = "Credit Card",
                 Description = "Process credit cards using PayPal's REST interface.",
                 LogoUrl = "https://github.com/montanehamilton/vc-module-PayPal-Rest/raw/master/Paypal.Rest/Content/paypal_2014_logo.png",
                 Settings = settings
@@ -30,14 +30,14 @@ namespace Paypal.Rest
 
             Func<PaypalRestPayPalPaymentMethod> paypalRestPayPalPaymentMethod = () => new PaypalRestPayPalPaymentMethod()
             {
-                Name = "PayPal (Paypal/REST)",
+                Name = "PayPal",
                 Description = "Process PayPal using PayPal's REST interface.",
                 LogoUrl = "https://github.com/montanehamilton/vc-module-PayPal-Rest/raw/master/Paypal.Rest/Content/paypal_2014_logo.png",
                 Settings = settings
             };
 
             _container.Resolve<IPaymentMethodsService>().RegisterPaymentMethod(paypalRestCreditCardPaymentMethod);
-            _container.Resolve<IPaymentMethodsService>().RegisterPaymentMethod(paypalRestPayPalPaymentMethod);
+            //_container.Resolve<IPaymentMethodsService>().RegisterPaymentMethod(paypalRestPayPalPaymentMethod);
         }
     }
 }

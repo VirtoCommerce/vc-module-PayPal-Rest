@@ -11,7 +11,7 @@ namespace Paypal.Rest.PaymentMethods
     public class PaypalRestPayPalPaymentMethod : PaymentMethod
     {
         public PaypalRestPayPalPaymentMethod()
-            : base("Paypal.Rest.PayPal")
+            : base("Paypal.Rest")
         {
         }
 
