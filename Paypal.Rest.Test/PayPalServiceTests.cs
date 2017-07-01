@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using Common.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using VirtoCommerce.Domain.Commerce.Model;
 using VirtoCommerce.Domain.Order.Model;
 using VirtoCommerce.Domain.Payment.Model;
@@ -11,6 +13,7 @@ namespace Paypal.Rest.Test
     public class PayPalServiceTests
     {
         private PayPalService _payPalService;
+        private Mock<ILog> _logger;
 
         [TestInitialize]
         public void TestInitialize()
@@ -21,7 +24,9 @@ namespace Paypal.Rest.Test
                 ClientSecret = "EAdr_JFKnrP-qdYehzOxfflmxCAvqgMcRrWgf4yOgFv-pNdmE49e92ETopqGNnjgiSJlFTe5cu5GehMh",
                 Mode = "sandbox"
             };
-            _payPalService = new PayPalService(configuration);
+
+            _logger = new Mock<ILog>();
+            _payPalService = new PayPalService(configuration, _logger.Object);
         }
 
         [TestMethod]

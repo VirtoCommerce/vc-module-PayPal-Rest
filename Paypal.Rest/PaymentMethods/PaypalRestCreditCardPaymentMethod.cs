@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Specialized;
+using Common.Logging;
 using VirtoCommerce.Domain.Payment.Model;
 
 namespace Paypal.Rest.PaymentMethods
 {
     public class PaypalRestCreditCardPaymentMethod : PaymentMethod
     {
-        public PaypalRestCreditCardPaymentMethod()
+        private readonly ILog _logger;
+
+        public PaypalRestCreditCardPaymentMethod(ILog logger)
             : base("Paypal.Rest")
         {
+            _logger = logger;
         }
 
         public override PaymentMethodType PaymentMethodType => PaymentMethodType.Standard;
@@ -24,8 +28,8 @@ namespace Paypal.Rest.PaymentMethods
                 throw new NullReferenceException("BankCardInfo should not be null.");
 
             var retVal = new ProcessPaymentResult();
-
-            var payPalService = new PayPalService(GetConfiguration());
+            
+            var payPalService = new PayPalService(GetConfiguration(), _logger);
             var result = payPalService.ProcessCreditCard(context);
 
             PaymentStatus newStatus;
@@ -41,6 +45,7 @@ namespace Paypal.Rest.PaymentMethods
             {
                 context.Payment.IsApproved = false;
                 retVal.Error = result.Error;
+                retVal.IsSuccess = false;
                 context.Payment.VoidedDate = DateTime.UtcNow;
                 newStatus = PaymentStatus.Voided;
             }

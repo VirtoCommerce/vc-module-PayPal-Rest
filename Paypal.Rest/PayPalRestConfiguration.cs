@@ -16,7 +16,7 @@ namespace Paypal.Rest
         {
             return new Dictionary<string, string>
             {
-                { "mode", Mode },
+                { "mode", string.IsNullOrWhiteSpace(Mode) ? "sandbox" : Mode.ToLowerInvariant() },
                 { "clientId", ClientId },
                 { "clientSecret", ClientSecret },
                 { "connectionTimeout", Timeout.ToString() }

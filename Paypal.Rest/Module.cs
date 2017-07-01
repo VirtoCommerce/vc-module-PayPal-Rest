@@ -1,4 +1,5 @@
 ﻿using System;
+using Common.Logging;
 using Microsoft.Practices.Unity;
 using Paypal.Rest.PaymentMethods;
 using VirtoCommerce.Domain.Payment.Services;
@@ -19,8 +20,9 @@ namespace Paypal.Rest
         public override void PostInitialize()
         {
             var settings = _container.Resolve<ISettingsManager>().GetModuleSettings("Paypal.Rest");
-            
-            Func<PaypalRestCreditCardPaymentMethod> paypalRestCreditCardPaymentMethod = () => new PaypalRestCreditCardPaymentMethod
+            var logger = _container.Resolve<ILog>();
+
+            Func<PaypalRestCreditCardPaymentMethod> paypalRestCreditCardPaymentMethod = () => new PaypalRestCreditCardPaymentMethod(logger)
             {
                 Name = "Credit Card",
                 Description = "Process credit cards using PayPal's REST interface.",
@@ -28,16 +30,7 @@ namespace Paypal.Rest
                 Settings = settings
             };
 
-            Func<PaypalRestPayPalPaymentMethod> paypalRestPayPalPaymentMethod = () => new PaypalRestPayPalPaymentMethod()
-            {
-                Name = "PayPal",
-                Description = "Process PayPal using PayPal's REST interface.",
-                LogoUrl = "https://github.com/montanehamilton/vc-module-PayPal-Rest/raw/master/Paypal.Rest/Content/paypal_2014_logo.png",
-                Settings = settings
-            };
-
             _container.Resolve<IPaymentMethodsService>().RegisterPaymentMethod(paypalRestCreditCardPaymentMethod);
-            //_container.Resolve<IPaymentMethodsService>().RegisterPaymentMethod(paypalRestPayPalPaymentMethod);
         }
     }
 }
